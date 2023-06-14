@@ -1,29 +1,42 @@
-import { useState, useEffect } from "react";
-
+import { useEffect, useState } from "react";
 function App() {
   const [loading, setLoading] = useState(true);
-  const [coins, setCoins] = useState([]);
+  const [movies, setMovies] = useState([]);
+  const getMovies = async () => {
+    const json = await (
+      await fetch(
+        `https://yts.mx/api/v2/list_movies.json?minimum_rating=8.8&sort_by=year`
+      )
+    ).json();
+    setMovies(json.data.movies);
+    setLoading(false);
+  };
   useEffect(() => {
-    fetch("https://api.coinpaprika.com/v1/tickers")
-      .then((response) => response.json())
-      .then((json) => {
-        setCoins(json);
-        setLoading(false);
-      });
-  }, []); //use only one
+    getMovies();
+  }, []);
+  console.log(movies);
+
   return (
     <div>
-      <h1>The Coin! {loading ? "" : `(${coins.length})`}</h1>
       {loading ? (
-        <strong>Loading...</strong>
+        <h1>Loading...</h1>
       ) : (
-        <select>
-          {coins.map((coin) => (
-            <option>
-              {coin.name} ({coin.symbol}): ${coin.quotes.USD.price} USD
-            </option>
+        <div>
+          {movies.map((movie) => (
+            <div key={movie.id}>
+              <img src={movie.medium_cover_image} />
+              <h2>{movie.title}</h2>
+              <p>{movie.summary}</p>
+              <ul>
+                <li>
+                  {movie.genres.map((g) => (
+                    <li key={g}>{g}</li>
+                  ))}
+                </li>
+              </ul>
+            </div>
           ))}
-        </select>
+        </div>
       )}
     </div>
   );
@@ -31,12 +44,4 @@ function App() {
 
 export default App;
 
-//컴포넌트를 다르게 만들고, 그 컴포넌트를 위한 css를 만들고, className을 기억할 필요 없음.
-// 왜? => className={styles.title} 이런식으로 필요할 때 써주면 랜덤으로 만들어주니까!
-//코드를 딱 한 번 실행할 거임. 뭘?
-//useEffect는 두 개의 argument를 가짐.
-//useEffect는 우리 코드가 딱 한 번만 실행될 수 있도록 보호해줌.
-// ,[]) -> 한 번만 실행해라
-// ,[keyword] -> keyword 변화시 실행해라
-// js 쓸 땐 {} 쓰기
-//react에서 map 쓰면 element에 key 줘야함
+//map 은 배로운 배열을 만들어줌.
